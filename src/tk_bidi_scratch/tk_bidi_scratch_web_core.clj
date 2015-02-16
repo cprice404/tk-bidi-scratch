@@ -2,9 +2,10 @@
   (:require [tk-bidi-scratch.tk-bidi-scratch-service :as hello-svc]
             [clojure.tools.logging :as log]
             [compojure.core :as compojure]
-            [compojure.route :as route]))
+            [compojure.route :as route]
+            [bidi.ring :as bidi-ring]))
 
-(defn app
+(defn compojure-app
   [hello-service]
   (compojure/routes
     (compojure/GET "/foo/:caller" [caller]
@@ -20,3 +21,18 @@
          :headers {"Content-Type" "text/plain"}
          :body    (hello-svc/hello hello-service (str "bar" caller))}))
     (route/not-found "Not Found")))
+
+(defn bidi-routes
+  [hello-service]
+  ["/" {["foo/" :caller]
+        (fn [{{:keys [caller]} :route-params}]
+          (log/info "Handling FOO request for caller:" caller)
+          {:status  200
+           :headers {"Content-Type" "text/plain"}
+           :body    (hello-svc/hello hello-service (str "foo" caller))})
+       ["bar/" :caller]
+       (fn [{{:keys [caller]} :route-params}]
+         (log/info "Handling BAR request for caller:" caller)
+         {:status  200
+          :headers {"Content-Type" "text/plain"}
+          :body    (hello-svc/hello hello-service (str "bar" caller))})}])

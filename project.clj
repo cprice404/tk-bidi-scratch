@@ -11,7 +11,8 @@
                  [compojure "1.2.0"]
                  [org.clojure/tools.logging "0.3.1"]
                  [puppetlabs/trapperkeeper ~tk-version]
-                 [puppetlabs/trapperkeeper-webserver-jetty9 ~tk-jetty9-version]]
+                 [puppetlabs/trapperkeeper-webserver-jetty9 ~tk-jetty9-version]
+                 [bidi "1.18.1"]]
 
   :profiles {:dev {:dependencies [[puppetlabs/trapperkeeper ~tk-version :classifier "test" :scope "test"]
                                   [puppetlabs/kitchensink ~ks-version :classifier "test" :scope "test"]

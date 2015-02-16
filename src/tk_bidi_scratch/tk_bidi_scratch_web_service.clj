@@ -3,7 +3,8 @@
             [compojure.core :as compojure]
             [tk-bidi-scratch.tk-bidi-scratch-web-core :as core]
             [puppetlabs.trapperkeeper.core :as trapperkeeper]
-            [puppetlabs.trapperkeeper.services :as tk-services]))
+            [puppetlabs.trapperkeeper.services :as tk-services]
+            [bidi.ring :as bidi-ring]))
 
 (trapperkeeper/defservice hello-web-service
   [[:ConfigService get-in-config]
@@ -14,8 +15,9 @@
     (let [url-prefix (get-route this)]
       (add-ring-handler
         this
-        (compojure/context url-prefix []
-          (core/app (tk-services/get-service this :HelloService))))
+        (bidi-ring/make-handler
+          [url-prefix [(core/bidi-routes
+                         (tk-services/get-service this :HelloService))]]))
       (assoc context :url-prefix url-prefix)))
 
   (start [this context]

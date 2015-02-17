@@ -23,7 +23,7 @@
          :body    (hello-svc/hello hello-service (str "bar" caller))}))
     (route/not-found "Not Found")))
 
-(defn bidi-routes
+#_(defn bidi-routes
   [hello-service]
   ["/" {["foo/" :caller]
         [[:get
@@ -40,6 +40,30 @@
            {:status  200
             :headers {"Content-Type" "text/plain"}
             :body    (hello-svc/hello hello-service (str "bar" caller))})}}])
+
+(defn myroutes
+  [& routes]
+  ["" (into [] routes)])
+
+(defn MYGET
+  [pattern handler]
+  [pattern {:get handler}])
+
+(defn bidi-routes
+  [hello-service]
+  (myroutes
+    (MYGET ["/foo/" :caller]
+           (fn [{{:keys [caller]} :route-params}]
+             (log/info "Handling FOO request for caller:" caller)
+             {:status  200
+              :headers {"Content-Type" "text/plain"}
+              :body    (hello-svc/hello hello-service (str "foo" caller))}))
+    (MYGET ["/bar/" :caller]
+           (fn [{{:keys [caller]} :route-params}]
+             (log/info "Handling BAR request for caller:" caller)
+             {:status  200
+              :headers {"Content-Type" "text/plain"}
+              :body    (hello-svc/hello hello-service (str "bar" caller))}))))
 
 (defn update-route-info
   [route-info pattern]

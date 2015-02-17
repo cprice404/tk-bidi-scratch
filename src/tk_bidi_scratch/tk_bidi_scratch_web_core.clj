@@ -3,7 +3,8 @@
             [clojure.tools.logging :as log]
             [compojure.core :as compojure]
             [compojure.route :as route]
-            [bidi.ring :as bidi-ring]))
+            [clojure.zip :as zip]
+            [clojure.string :as str]))
 
 (defn compojure-app
   [hello-service]
@@ -39,3 +40,37 @@
              {:status  200
               :headers {"Content-Type" "text/plain"}
               :body    (hello-svc/hello hello-service (str "bar" caller))})]]]]])
+
+(defn update-route-info
+  [route-info pattern]
+  (cond
+    (contains? #{:get :post :put :delete :head} pattern)
+    (assoc-in route-info [:method] (-> pattern name str/upper-case))
+
+    :else
+    (update-in route-info [:path] str
+               (if (vector? pattern)
+                 (str/join pattern)
+                 pattern))))
+
+(defn print-routes
+  ([routepair]
+    (print-routes {:path "" :method :any} routepair))
+  ([route-info [pattern matched]]
+    (let [route-info (update-route-info route-info pattern)]
+      (if (vector? matched)
+        (doseq [routepair matched]
+          (print-routes route-info routepair))
+        (println (str (:method route-info) ": " (:path route-info)) "\n")))))
+
+#_(defn zippy-routes
+  [routes]
+  (->> (clojure.zip/vector-zip routes)
+       (iterate zip/next)
+       (take-while (complement zip/end?))
+       (filter (comp fn? zip/node))
+       (mapv zip/path)
+       first
+       (mapv zip/node)))
+
+(def r ["/howdy" [(bidi-routes "bunk")]])

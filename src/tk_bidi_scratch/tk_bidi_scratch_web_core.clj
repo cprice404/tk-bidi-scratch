@@ -25,21 +25,21 @@
 
 (defn bidi-routes
   [hello-service]
-  ["/" [[["foo/" :caller]
-         [[:get
-           (fn [{{:keys [caller]} :route-params}]
-             (log/info "Handling FOO request for caller:" caller)
-             {:status  200
-              :headers {"Content-Type" "text/plain"}
-              :body    (hello-svc/hello hello-service (str "foo" caller))})]]]
+  ["/" {["foo/" :caller]
+        [[:get
+          (fn [{{:keys [caller]} :route-params}]
+            (log/info "Handling FOO request for caller:" caller)
+            {:status  200
+             :headers {"Content-Type" "text/plain"}
+             :body    (hello-svc/hello hello-service (str "foo" caller))})]]
 
-        [["bar/" :caller]
-         [[:get
-           (fn [{{:keys [caller]} :route-params}]
-             (log/info "Handling BAR request for caller:" caller)
-             {:status  200
-              :headers {"Content-Type" "text/plain"}
-              :body    (hello-svc/hello hello-service (str "bar" caller))})]]]]])
+        ["bar/" :caller]
+        {:get
+         (fn [{{:keys [caller]} :route-params}]
+           (log/info "Handling BAR request for caller:" caller)
+           {:status  200
+            :headers {"Content-Type" "text/plain"}
+            :body    (hello-svc/hello hello-service (str "bar" caller))})}}])
 
 (defn update-route-info
   [route-info pattern]

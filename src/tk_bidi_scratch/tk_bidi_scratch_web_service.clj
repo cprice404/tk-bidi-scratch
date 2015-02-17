@@ -6,6 +6,10 @@
             [puppetlabs.trapperkeeper.services :as tk-services]
             [bidi.ring :as bidi-ring]))
 
+(defn bidi-routes
+  [url-prefix hello-service]
+  [url-prefix [(core/bidi-routes hello-service)]])
+
 (trapperkeeper/defservice hello-web-service
   [[:ConfigService get-in-config]
    [:WebroutingService add-ring-handler get-route]
@@ -16,8 +20,7 @@
       (add-ring-handler
         this
         (bidi-ring/make-handler
-          [url-prefix [(core/bidi-routes
-                         (tk-services/get-service this :HelloService))]]))
+          (bidi-routes url-prefix (tk-services/get-service this :HelloService))))
       (assoc context :url-prefix url-prefix)))
 
   (start [this context]

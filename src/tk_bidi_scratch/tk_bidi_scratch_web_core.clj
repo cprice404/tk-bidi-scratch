@@ -53,6 +53,19 @@
                  (str/join pattern)
                  pattern))))
 
+(defn maps-to-vectors
+  [l]
+  (loop [x l]
+    (cond
+      (zip/end? x)
+      (-> x zip/root)
+
+      (map? (zip/node x))
+      (maps-to-vectors (zip/edit x #(into [] %)))
+
+      :else
+      (maps-to-vectors (zip/next l)))))
+
 (defn print-routes
   ([routepair]
     (print-routes {:path "" :method :any} routepair))
@@ -74,3 +87,5 @@
        (mapv zip/node)))
 
 (def r ["/howdy" [(bidi-routes "bunk")]])
+
+;; (print-routes (-> r zip/vector-zip maps-to-vectors))

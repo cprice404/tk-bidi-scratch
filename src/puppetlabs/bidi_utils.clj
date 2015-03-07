@@ -13,42 +13,14 @@
     (maps-to-vectors* (zip/edit l #(into [] %)))
 
     :else
-    (maps-to-vectors* (zip/next l)))
-  #_(loop [x l]
-    (cond
-      (zip/end? x)
-      (-> x zip/root)
-
-      (map? (zip/node x))
-      (maps-to-vectors (zip/edit x #(into [] %)))
-
-      :else
-      (maps-to-vectors (zip/next l)))))
+    (maps-to-vectors* (zip/next l))))
 
 (defn maps-to-vectors
   [routes]
   (-> routes zip/vector-zip maps-to-vectors*))
 
-
-(defn context [url-prefix routes]
-  (let [context-routes (maps-to-vectors [url-prefix [routes]])]
-    (with-meta
-      (bidi-ring/make-handler
-        context-routes)
-      {:routes context-routes})))
-
-(defn routes
-  [& routes]
-  ["" (into [] routes)])
-
-(defn GET
-  [pattern handler]
-  [pattern {:get handler}]
-  #_[pattern [[:get handler]]])
-
 (defn update-route-info
   [route-info pattern]
-  #_(println "UPDATING ROUTE INFO:" route-info "|" pattern)
   (cond
     (contains? #{:get :post :put :delete :head} pattern)
     (assoc-in route-info [:method] (-> pattern name str/upper-case))
@@ -68,3 +40,20 @@
        (doseq [routepair matched]
          (print-routes route-info routepair))
        (println (str (:method route-info) ": " (:path route-info)))))))
+
+
+
+(defn context [url-prefix routes]
+  (let [context-routes (maps-to-vectors [url-prefix [routes]])]
+    (with-meta
+      (bidi-ring/make-handler
+        context-routes)
+      {:routes context-routes})))
+
+(defn routes
+  [& routes]
+  ["" (into [] routes)])
+
+(defn GET
+  [pattern handler]
+  [pattern {:get handler}])

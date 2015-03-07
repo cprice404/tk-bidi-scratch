@@ -13,7 +13,7 @@
   (init [this context]
         (log/info "Initializing hello webservice")
         (let [url-prefix (get-route this)
-              app         (bidi-utils/context
+              app         (bidi-utils/context-handler
                             url-prefix
                             (core/bidi-routes
                               (tk-services/get-service this :HelloService)))]

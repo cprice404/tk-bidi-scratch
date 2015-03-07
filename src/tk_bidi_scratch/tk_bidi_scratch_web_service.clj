@@ -1,6 +1,5 @@
 (ns tk-bidi-scratch.tk-bidi-scratch-web-service
   (:require [clojure.tools.logging :as log]
-            [clojure.pprint :as pprint]
             [tk-bidi-scratch.tk-bidi-scratch-web-core :as core]
             [puppetlabs.trapperkeeper.core :as trapperkeeper]
             [puppetlabs.trapperkeeper.services :as tk-services]

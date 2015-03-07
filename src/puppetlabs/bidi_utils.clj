@@ -1,23 +1,6 @@
 (ns puppetlabs.bidi-utils
   (:require [bidi.ring :as bidi-ring]
-            [clojure.string :as str]
             [clojure.zip :as zip]))
-
-#_(defn maps-to-vectors*
-  [l]
-  (cond
-    (zip/end? l)
-    (-> l zip/root)
-
-    (map? (zip/node l))
-    (maps-to-vectors* (zip/edit l #(into [] %)))
-
-    :else
-    (maps-to-vectors* (zip/next l))))
-
-#_(defn maps-to-vectors
-  [routes]
-  (-> routes zip/vector-zip maps-to-vectors*))
 
 (defn update-route-info
   [route-info pattern]
@@ -26,47 +9,47 @@
     (assoc-in route-info [:method] pattern)
 
     :else
-    (update-in route-info [:path] concat
-               (if (vector? pattern)
-                 pattern
-                 [pattern]))))
+    (update-in route-info [:path] concat (flatten [pattern]))))
+
+(declare route-metadata*)
+
+(defn nested-route-metadata*
+  [routes route-info loc]
+  (let [[pattern matched] (zip/node loc)]
+    (cond
+      (map? matched)
+      (do
+        (route-metadata*
+          routes
+          route-info
+          (zip/vector-zip [pattern (into [] matched)])))
+
+      (vector? matched)
+      (do
+        (route-metadata*
+          routes
+          (update-route-info route-info pattern)
+          (-> loc zip/down zip/right zip/down)))
+
+      :else
+      (do
+        (conj routes (update-route-info route-info pattern))))))
 
 (defn route-metadata*
   [routes route-info loc]
   (if (nil? loc)
     routes
-    (let [node (zip/node loc)]
-      (cond
-        (map? node)
-        (do
-          (route-metadata* routes route-info (zip/edit loc #(into [] %))))
+    (cond
+      (vector? (zip/node loc))
+      (let [routes (nested-route-metadata* routes route-info loc)]
+        (let [next (zip/right loc)]
+          (route-metadata*
+            routes
+            route-info
+            next)))
 
-        (vector? node)
-        (let [[pattern matched] (zip/node loc)]
-          (let [routes (cond
-                         (map? matched)
-                         (do
-                           (route-metadata* routes route-info
-                                            (zip/vector-zip [pattern (into [] matched)])))
-
-                         (vector? matched)
-                         (do
-                           (route-metadata*
-                             routes
-                             (update-route-info route-info pattern)
-                             (-> loc zip/down zip/right zip/down)))
-
-                         :else
-                         (do
-                           (conj routes (update-route-info route-info pattern))))]
-            (let [next (zip/right loc)]
-              (route-metadata*
-                routes
-                route-info
-                next))))
-
-        :else
-        (throw (IllegalStateException. "d'oh"))))))
+      :else
+      (throw (IllegalStateException. "d'oh")))))
 
 (defn route-metadata
   [routes]

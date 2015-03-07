@@ -18,22 +18,19 @@
   (let [[pattern matched] (zip/node loc)]
     (cond
       (map? matched)
-      (do
-        (route-metadata*
-          routes
-          route-info
-          (zip/vector-zip [pattern (into [] matched)])))
+      (route-metadata*
+        routes
+        route-info
+        (zip/vector-zip [pattern (into [] matched)]))
 
       (vector? matched)
-      (do
-        (route-metadata*
-          routes
-          (update-route-info route-info pattern)
-          (-> loc zip/down zip/right zip/down)))
+      (route-metadata*
+        routes
+        (update-route-info route-info pattern)
+        (-> loc zip/down zip/right zip/down))
 
       :else
-      (do
-        (conj routes (update-route-info route-info pattern))))))
+      (conj routes (update-route-info route-info pattern)))))
 
 (defn route-metadata*
   [routes route-info loc]

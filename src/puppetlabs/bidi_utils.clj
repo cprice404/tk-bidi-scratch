@@ -37,7 +37,15 @@
 
 (defn route-metadata*
   [routes route-info loc]
-  (if (nil? loc)
+  (println "LOC:" (zip/node loc))
+  (loop [routes routes
+         loc loc]
+    (let [routes (nested-route-metadata* routes route-info loc)]
+      (if-let [next (zip/right loc)]
+        (recur routes next)
+        routes)))
+
+  #_(if (nil? loc)
     routes
     (cond
       (vector? (zip/node loc))

@@ -37,36 +37,19 @@
 
 (defn route-metadata*
   [routes route-info loc]
-  (println "LOC:" (zip/node loc))
   (loop [routes routes
-         loc loc]
+         loc    loc]
     (let [routes (nested-route-metadata* routes route-info loc)]
       (if-let [next (zip/right loc)]
         (recur routes next)
-        routes)))
-
-  #_(if (nil? loc)
-    routes
-    (cond
-      (vector? (zip/node loc))
-      (let [routes (nested-route-metadata* routes route-info loc)]
-        (let [next (zip/right loc)]
-          (route-metadata*
-            routes
-            route-info
-            next)))
-
-      :else
-      (throw (IllegalStateException. "d'oh")))))
+        routes))))
 
 (defn route-metadata
   [routes]
-  (->> [routes]
-       zip/vector-zip
-       zip/down
-       (route-metadata* []
-                        {:path []
-                         :method :any})))
+  (let [route-info {:path   []
+                    :method :any}
+        loc        (-> [routes] zip/vector-zip zip/down)]
+    (route-metadata* [] route-info loc)))
 
 
 

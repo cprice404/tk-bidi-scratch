@@ -1,5 +1,6 @@
 (ns tk-bidi-scratch.tk-bidi-scratch-web-service
   (:require [clojure.tools.logging :as log]
+            [clojure.pprint :as pprint]
             [tk-bidi-scratch.tk-bidi-scratch-web-core :as core]
             [puppetlabs.trapperkeeper.core :as trapperkeeper]
             [puppetlabs.trapperkeeper.services :as tk-services]
@@ -17,7 +18,7 @@
                             (core/bidi-routes
                               (tk-services/get-service this :HelloService)))]
           (log/info "Adding routes:")
-          (bidi-utils/print-routes (:routes (meta app)))
+          (pprint/pprint (:routes (meta app)))
           (add-ring-handler this app)
           (assoc context :url-prefix url-prefix)))
 
